@@ -1,5 +1,4 @@
 print("Hello, World!")
 print("hello")
 print("new")
-print("new")
 
