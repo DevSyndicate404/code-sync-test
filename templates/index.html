@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Form</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .field { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: .5rem; font-weight: bold; }
+        input { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: .75rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        #message { margin-top: 1rem; padding: 1rem; border-radius: 4px; display: none; font-size: 0.9rem; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="margin-top: 0;">Login Validation</h2>
+        <form id="validateForm">
+            <div class="field">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="email@example.com" required>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="At least 8 characters" required>
+            </div>
+            <button type="submit">Validate</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('validateForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Reset message state
+            messageDiv.style.display = 'none';
+            messageDiv.className = '';
+
+            try {
+                const response = await fetch('/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                messageDiv.style.display = 'block';
+
+                if (response.ok) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.classList.add('success');
+                } else {
+                    const errorMsgs = result.errors ? result.errors.join(' ') : result.error;
+                    messageDiv.textContent = errorMsgs;
+                    messageDiv.classList.add('error');
+                }
+            } catch (err) {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = 'Could not connect to the server.';
+                messageDiv.classList.add('error');
+            }
+        });
+    </script>
+</body>
+</html>
