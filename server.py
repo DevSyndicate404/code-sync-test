@@ -1,41 +1,49 @@
-from flask import Flask, request, jsonify
-import re
+from flask import Flask, jsonify, request
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-def is_valid_email(email):
-    # Basic regular expression for email validation
-    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-    return re.match(email_regex, email) is not None
+# Configuration
+app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # Change this in production!
+jwt = JWTManager(app)
 
-@app.route('/validate', methods=['POST'])
-def validate_credentials():
+# In-memory database for demonstration
+users = {}
+
+@app.route('/register', methods=['POST'])
+def register():
     data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-    if not data:
-        return jsonify({"error": "Request body must be JSON"}), 400
+    if not username or not password:
+        return jsonify({"msg": "Missing username or password"}), 400
+    
+    if username in users:
+        return jsonify({"msg": "User already exists"}), 400
 
-    email = data.get('email', '')
-    password = data.get('password', '')
+    users[username] = generate_password_hash(password)
+    return jsonify({"msg": "User created successfully"}), 201
 
-    errors = []
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-    # Validate Email
-    if not email:
-        errors.append("Email is required.")
-    elif not is_valid_email(email):
-        errors.append("Invalid email format.")
+    user_pw_hash = users.get(username)
+    if not user_pw_hash or not check_password_hash(user_pw_hash, password):
+        return jsonify({"msg": "Bad username or password"}), 401
 
-    # Validate Password (example: min 8 characters)
-    if not password:
-        errors.append("Password is required.")
-    elif len(password) < 8:
-        errors.append("Password must be at least 8 characters long.")
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
 
-    if errors:
-        return jsonify({"status": "error", "errors": errors}), 400
-
-    return jsonify({"status": "success", "message": "Validation passed"}), 200
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
