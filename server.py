@@ -3,11 +3,11 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 
-
+app = Flask(__name__)
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # Change this in production!
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelthours=1)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 jwt = JWTManager(app)
 
 # In-memory database for demonstration
