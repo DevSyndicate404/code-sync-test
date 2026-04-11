@@ -3,12 +3,12 @@
     --primary-hover: #2563eb;
     --bg: #f8fafc;
     --text-main: #1e293b;
-    
+    --text-heading: #0f172a;
     --text-muted: #64748b;
     --border: #e2e8f0;
     --white: #ffffff;
     --error-bg: #fef2f2;
-    --error-text: #991b1b;
+    --error-text: #991
     --success-bg: #f0fdf4;
     --success-text: #166534;
 }
